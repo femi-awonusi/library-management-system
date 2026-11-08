@@ -7,6 +7,11 @@ datasource db {
   provider = "postgresql"
 }
 
+enum Role {
+  PATRON
+  LIBRARIAN
+}
+
 model Genre {
   id        Int      @id @default(autoincrement())
   name      String   @unique
@@ -16,14 +21,14 @@ model Genre {
 }
 
 model Book {
-  id            Int      @id @default(autoincrement())
+  id            Int     @id @default(autoincrement())
   title         String
   author        String
-  isbn          String?  @unique
+  isbn          String? @unique
   publishedYear Int?
 
   genreId Int
-  genre   Genre  @relation(fields: [genreId], references: [id])
+  genre   Genre @relation(fields: [genreId], references: [id])
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -33,6 +38,7 @@ model User {
   id        Int      @id @default(autoincrement())
   name      String
   email     String   @unique
+  role      Role     @default(PATRON)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
