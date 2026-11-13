@@ -2,6 +2,7 @@
 import 'dotenv/config';
 import { PrismaPg } from '@prisma/adapter-pg';
 import { PrismaClient } from '../src/generated/prisma/client.js';
+import * as bcrypt from 'bcrypt';
 
 const connectionString = process.env['DATABASE_URL'];
 
@@ -100,6 +101,35 @@ async function main() {
       createdCount++;
     }
   }
+  
+    // Seed librarian account
+  const librarianEmail = process.env['LIBRARIAN_EMAIL'];
+  const librarianPassword = process.env['LIBRARIAN_PASSWORD'];
+
+  if (!librarianEmail || !librarianPassword) {
+    throw new Error(
+      'LIBRARIAN_EMAIL and LIBRARIAN_PASSWORD must be defined in .env',
+    );
+  }
+
+  const hashedPassword = await bcrypt.hash(librarianPassword, 12);
+
+  await prisma.user.upsert({
+    where: { email: librarianEmail },
+    update: {
+      name: 'Library Librarian',
+      password: hashedPassword,
+      role: 'LIBRARIAN',
+    },
+    create: {
+      name: 'Library Librarian',
+      email: librarianEmail,
+      password: hashedPassword,
+      role: 'LIBRARIAN',
+    },
+  });
+
+  console.log('Librarian account seeded successfully.');
 
   console.log(`Genres available: ${genreRecords.length}`);
   console.log(`Books created: ${createdCount}`);
